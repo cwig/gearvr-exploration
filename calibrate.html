@@ -1,0 +1,271 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset=utf-8>
+  <title>Real non-calibrated and calibrated samples</title>
+  <style>
+      body { margin: 0; background-color: #fff;}
+      #stuff {
+        position: absolute;
+        top: 40px; left: 40px;
+      }
+  </style>
+  <script src="//d3js.org/d3.v3.min.js" charset="utf-8"></script>
+  <script src="//d3js.org/queue.v1.min.js"></script>
+</head>
+<body>
+
+<script src="ControllerBluetoothInterface.js"></script>
+
+<script src="js/three.min.js"></script>
+<script src="js/OrbitControls.js"></script>
+
+<div id="stuff">
+    <button id="pair-btn">Pair</button>
+    <button id='start-btn'>Start</button>
+</div>
+
+<script>
+var scene, camera, renderer, controls;
+
+// magnetic field (Irvine, CA, Dec '15)
+var F = 46.85,
+    I = 58.56951 * Math.PI / 180.;
+    D = 12.00803 * Math.PI / 180.;
+
+// sizes
+var width  = window.innerWidth,
+    height = window.innerHeight,
+    aspectRatio = width / height,
+    ratio = window.devicePixelRatio || 1,
+    viewSize = 1.2 * 2 * F;
+
+// magnetometer data
+var data_ncal, data_cal;
+
+function initScene() {
+
+    scene = new THREE.Scene();
+
+    camera = new THREE.OrthographicCamera(
+        -aspectRatio * viewSize / 2, aspectRatio * viewSize / 2,
+        viewSize / 2, -viewSize / 2, 1, 1000 );
+    
+    camera.position.set( -2 * F , 2 * F, -2 * F );
+
+    renderer = new THREE.WebGLRenderer();
+    renderer.setClearColor( 0xffffff );
+    renderer.setSize( width * ratio, height * ratio );
+    renderer.domElement.style.width = width + 'px';
+    renderer.domElement.style.height = height + 'px';
+
+    document.body.appendChild( renderer.domElement );
+
+    controls = new THREE.OrbitControls( camera, renderer.domElement );
+
+}
+
+geometry = null;
+material = null;
+scene = null;
+points = null;
+
+geometry2 = null;
+material2 = null;
+points2 = null;
+
+function initGeometry() {
+
+    // point sprite
+    sprite = THREE.ImageUtils.loadTexture( 'textures/ball.png' );
+
+    // reference sphere
+    geometry = new THREE.SphereGeometry( F, 16, 16 );
+    material = new THREE.MeshBasicMaterial( {
+      color: 0xd3d3d3,
+      wireframe: true } );
+    mesh = new THREE.Mesh( geometry, material );
+    scene.add( mesh );
+    
+
+
+    // reference axes
+    x = new THREE.ArrowHelper(
+        new THREE.Vector3( 1, 0, 0 ),
+        new THREE.Vector3( 0, 0, 0 ),
+        1.5 * F,
+        0xff0000);
+    y = new THREE.ArrowHelper(
+        new THREE.Vector3( 0, 0, 1 ),
+        new THREE.Vector3( 0, 0, 0 ),
+        1.5 * F,
+        0x00ff00);
+    z = new THREE.ArrowHelper(
+        new THREE.Vector3( 0, -1, 0 ),
+        new THREE.Vector3( 0, 0, 0 ),
+        1.5 * F,
+        0x0000ff);
+
+    scene.add(x);
+    scene.add(y);
+    scene.add(z);
+
+
+    // non-calibrated points
+    geometry = new THREE.Geometry();
+
+    // for ( i = 0; i < data_ncal.length; i++ ) {
+
+    //     vertex = new THREE.Vector3(
+    //          data_ncal[i].x,
+    //          data_ncal[i].z,
+    //         -data_ncal[i].y );
+
+    //     geometry.vertices.push( vertex );
+
+    // }
+
+    // geometry.vertices.push(new THREE.Vector3(50,0,0))
+
+
+    material = new THREE.PointsMaterial( {
+      size: 10,
+      sizeAttenuation: false,
+      map: sprite,
+      alphaTest: 0.5,
+      transparent: true } );
+    material.color.setRGB(1, 0, 0);
+
+    points = new THREE.Points( geometry, material );
+    scene.add( points );
+
+    // calibrated points
+    geometry2 = new THREE.Geometry();
+
+    for(let pt of pts) {
+        geometry.vertices.push(new THREE.Vector3(pt[0],pt[1],pt[2]))
+    }
+
+
+    material2 = new THREE.PointsMaterial( {
+        size: 10,
+        sizeAttenuation: false,
+        map: sprite,
+        alphaTest: 0.5,
+        transparent: true } );
+    material2.color.setRGB(0, 0, 1);
+
+
+
+    points2 = new THREE.Points( geometry, material );
+    scene.add( points );
+
+}
+
+function init() {
+
+    initScene();
+    initGeometry();
+
+    window.addEventListener( 'resize', onResize, false );
+
+    animate();
+
+}
+
+function onResize() {
+
+    width = window.innerWidth;
+    height = window.innerHeight;
+    aspectRatio = width / height;
+
+    renderer.setSize( width, height );
+
+    camera.left = -aspectRatio * viewSize / 2;
+    camera.right = aspectRatio * viewSize / 2;
+    camera.updateProjectionMatrix();
+
+}
+
+function animate() {
+
+    requestAnimationFrame( animate );
+    controls.update();
+    renderer.render( scene, camera );
+
+}
+
+let pts = [
+]
+init();
+
+maxX = -1e8;
+minX = 1e8;
+maxY = -1e8;
+minY = 1e8;
+maxZ = -1e8;
+minZ = 1e8;
+
+
+const addPt = (x, y, z)=>{
+        if(x === 0 || y === 0 || z === 0) {
+            return;
+        }
+
+        pts.push([x,y,z]);
+
+        maxX = Math.max(maxX, x);
+        minX = Math.min(minX, x);
+
+        maxY = Math.max(maxY, y);
+        minY = Math.min(minY, y);    
+    
+        maxZ = Math.max(maxZ, z);
+        minZ = Math.min(minZ, z);
+
+        scene.remove(points);
+        geometry.dispose();
+        geometry = new THREE.Geometry();
+
+        // for(let pt of pts) {
+        for(let i=10; i<pts.length; i++) {
+            let pt = pts[i];
+
+            let sx = pt[0]
+            let sy = pt[1]
+            let sz = pt[2]
+
+            geometry.vertices.push(new THREE.Vector3(sx, sy, sz));
+        }
+
+        points = new THREE.Points(geometry, material);
+        scene.add(points);
+
+}
+
+
+const controllerBluetoothInterface = new ControllerBluetoothInterface((d) => {
+    // console.log(d.magX, d.magY, d.magZ)
+    addPt(d.magX, d.magY, d.magZ);
+    // console.log(d);
+    // addPt(d.accel[0]*50, d.accel[1]*50, d.accel[2]*50)
+});
+
+document.getElementById("pair-btn").addEventListener("click", ()=>{
+    controllerBluetoothInterface.pair();
+});
+
+document.getElementById("start-btn").addEventListener("click", ()=>{
+    controllerBluetoothInterface.runCommand(ControllerBluetoothInterface.CMD_VR_MODE)
+                    .then(() => controllerBluetoothInterface.runCommand(ControllerBluetoothInterface.CMD_SENSOR));
+});
+
+</script>
+
+
+
+
+
+</body>
+</html>
