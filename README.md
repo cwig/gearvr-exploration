@@ -56,11 +56,11 @@ On the board there are 5 contact points under the battery. In fact, there is jus
 
 From left to right the pins are as follows (The naming is based on the [DA14681](https://www.dialog-semiconductor.com/products/bluetooth-low-energy/da14680-and-da14681#tab-field_tab_content_resources) datasheet):
 
-1. RST
-2. GND
+1. 3.3v
+2. ADC2/P1_3
 3. P2_3
-4. ADC2/P1_3
-5. 3.3v
+4. GND
+5. RST
 
 There is a 1K resister between the contact and the IO pins and There is probably a pull down 250K resister to ground for the IO pins.
 
