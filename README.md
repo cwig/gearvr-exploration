@@ -74,6 +74,12 @@ UTX => P1_3
 URX => P2_3
 ```
 
+Although when I try to read the UART pins on start-up I get the following output:
+```
+F8 A2 FA C4 D3 1A F8 A2 FA C4 D3 1A
+```
+This is interesting because the datasheet says to expect the module number to be repeated twice. This is not the module number, but it does repeat.  I tried sending commands to the device with no luck.
+
 Then boot number 6, which looks exactly like the pin out we used for the OTA update:
 
 ```
