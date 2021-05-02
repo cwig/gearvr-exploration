@@ -28,7 +28,7 @@ let rMagY = magY * Math.cos(this.controllerAngle) + -magZ * Math.sin(this.contro
 let rMagZ = magY * Math.sin(this.controllerAngle) +  magZ * Math.cos(this.controllerAngle);
 ```
 
-Try out the [github pages](cwig.github.io/gearvr-exploration/index.html) for this repo so see the improvement. It is much more stable. Just remember to do the calibration by holding down the "back" and the "trigger" at the same time and swinging the remote in a figure 8.
+Try out the [github pages](https://cwig.github.io/gearvr-exploration/index.html) for this repo so see the improvement. It is much more stable. Just remember to do the calibration by holding down the "back" and the "trigger" at the same time and swinging the remote in a figure 8.
 
 Also, in order to make the movements looks better, I adjusted the OBJ model the main controller handle is on a level plane.
 
